@@ -1,0 +1,24 @@
+---
+    - name: install apache
+      apt: name={{item}} state=present update_cache=yes
+      with_items:
+       - python-pip
+       - python-virtualenv
+       - python-mysqldb
+
+    - name: Copy demp app source
+      copy: src=/demo/app/ dest=/var/www/demo mode=0755
+      notify: restart apache2
+
+    - name: copy apache virtual host config file
+      copy: src=/demo/demo.conf dest=/etc/apache2/sites-available mode=0755
+      notify: restart apache2
+
+    - name: Setup pip module
+      pip: requirements=/var/www/demo/requirements.txt virtualenv=/var/www/demo/.venv
+      notify: restart apache2
+
+    - name: Active Demo apache Site
+      file: src=/etc/apache2/sites-available/demo.conf dest=/etc/apache2/sites-enabled/demo.conf state=link
+      notify: restart apache2
+
